@@ -49,7 +49,7 @@ _Yv     ; European length units     ["_Yv" is imperial, "=Yv" is metric]
 ; FILE PATHS (-Yi1 through -Yi9):
 ; For example, point -Yi1 to ephemeris dir, -Yi2 to chart files dir, etc.
 
--Yi1 "C:\Astrolog\ephem"
+-Yi1 "./ephem"
 -Yi2 "C:\Astrolog\source"
 
 
