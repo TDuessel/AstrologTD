@@ -66,7 +66,7 @@ void PrintInDays(InDayInfo *pid, int occurcount, int counttotal, flag fProg)
 {
   char sz[cchSzDef];
   int fVoid, nVoid, nSkip = 0, i, j, k, s1, s2, s3;
-  CI ciCast, ciEvent;
+  CI ciCast = ciSave, ciEvent;
 #ifdef EXPRESS
   int nEclipse;
   real rEclipse;
@@ -690,7 +690,7 @@ void ChartTransitSearch(flag fProg)
   real divsiz, daysiz, d, e1, e2, f1, f2, mc = is.MC, ob = is.OB;
   flag fPrint = fTrue;
   CP cpN = cp0;
-  CI ciSav, ciCast, ciEvent;
+  CI ciSav, ciCast = ciSave, ciEvent;
 
   // Save away natal chart and initialize things.
 
