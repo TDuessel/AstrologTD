@@ -1,0 +1,17 @@
+*~
+*#
+*.o
+astrolog
+*.ps
+*.eps
+*.bmp
+!earth.bmp
+*.htm
+!astrolog.htm
+!license.htm
+*.html
+*.dw
+*.wmf
+*.txt
+!sefstars.txt
+!seorbel.txt
