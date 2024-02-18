@@ -133,8 +133,8 @@ int NProcessSwitchesW(int argc, char **argv, int pos,
   case 'B':
     if (FErrorArgc("WB", argc, 2))
       return tcError;
-    wi.xScroll = max(0, min(NFromSz(argv[1]), nScrollDiv));
-    wi.yScroll = max(0, min(NFromSz(argv[2]), nScrollDiv));
+    wi.xScroll = Max(0, Min(NFromSz(argv[1]), nScrollDiv));
+    wi.yScroll = Max(0, Min(NFromSz(argv[2]), nScrollDiv));
     SetScrollPos(wi.hwnd, SB_HORZ, wi.xScroll, fTrue);
     SetScrollPos(wi.hwnd, SB_VERT, wi.yScroll, fTrue);
     darg += 2;
@@ -984,7 +984,7 @@ LRESULT API WndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
       default:
         return fFalse;
       }
-      wi.xScroll = max(0, min(wi.xScroll, nScrollDiv));
+      wi.xScroll = Max(0, Min(wi.xScroll, nScrollDiv));
       if (wi.xScroll == x)
         break;
       SetScrollPos(hwnd, SB_HORZ, wi.xScroll, fTrue);
@@ -1023,7 +1023,7 @@ LRESULT API WndProc(HWND hwnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
       default:
         return fFalse;
       }
-      wi.yScroll = max(0, min(wi.yScroll, nScrollDiv));
+      wi.yScroll = Max(0, Min(wi.yScroll, nScrollDiv));
       if (wi.yScroll == y)
         break;
       SetScrollPos(hwnd, SB_VERT, wi.yScroll, fTrue);
@@ -2674,7 +2674,7 @@ flag API FRedraw(void)
     (!wi.fAutoSaveWire ? gs.ft != ftBmp : gs.ft != ftWire)) {
     gs.ft = !wi.fAutoSaveWire ? ftBmp : ftWire;
     if (!wi.fAutoSaveNum)
-      gi.szFileOut = !wi.fAutoSaveWire ? szFileAutoCore : "astrolog.dw";
+      gi.szFileOut = (char *)(!wi.fAutoSaveWire ? szFileAutoCore : "astrolog.dw");
     else {
       gi.szFileOut = szFile;
       sprintf(szFile, "ast%05d.%s",

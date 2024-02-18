@@ -66,7 +66,7 @@
 //#define PC /* Comment out this #define if you have a Unix, Mac, or other */
            /* system that isn't a generic PC running DOS or MS Windows.  */
 
-#define X11 /* Comment out this #define if you don't have X windows, or */
+//#define X11 /* Comment out this #define if you don't have X windows, or */
             /* else have them and don't wish to compile in X graphics.  */
 
 //#define WIN /* Comment out this #define if you don't have MS Windows, or */
@@ -78,7 +78,7 @@
 //#define WSETUP /* Comment out this #define if you don't want to compile a */
                /* modern Windows version that can do its own (un)setup.   */
 
-#define JPLWEB /* Comment out this #define if you don't want to compile in */
+//#define JPLWEB /* Comment out this #define if you don't want to compile in */
                /* features to access the JPL Horizons Website online.      */
 
 #define TIME /* Comment out this #define if your compiler can't take the  */
@@ -106,7 +106,7 @@
 ** astrolog.as settings file, that correspond to features no longer available.
 */
 
-#define GRAPH /* Comment out this #define if you don't want any graphics   */
+//#define GRAPH /* Comment out this #define if you don't want any graphics   */
               /* in the program. This switch allows at least generation of */
               /* bitmap files and must be set if any of the more advanced  */
               /* graphics feature additions are also compiled in.          */
