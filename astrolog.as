@@ -3,21 +3,21 @@
 ; The contents of this file can be automatically generated with the
 ; "File / Save Settings" menu command, or with the -od command switch.
 
--z 8:00W                ; Default time zone     [hours W or E of UTC   ]
--z0 Autodetect          ; Default Daylight time [0 standard, 1 daylight]
--zl 122W19'59 47N36'35  ; Default location      [longitude and latitude]
--zv 167ft               ; Default elevation     [in feet or meters     ]
--zf 59F                 ; Default temperature   [in Fahren. or Celsius ]
--zj "Current moment now" "Seattle, WA, USA" ; Default name and location
+-z 1:00E                ; Default time zone     [hours W or E of UTC   ]
+-z0 0			; Default Daylight time [0 standard, 1 daylight]
+-zl 6E5'2 50N46'31      ; Default location      [longitude and latitude]
+-zv 175m                ; Default elevation     [in feet or meters     ]
+-zf 10C                 ; Default temperature   [in Fahren. or Celsius ]
+-zj "Current moment now" "Aachen, Germany" ; Default name and location
 
 -Yz 0   ; Time minute addition to be used if "now" charts are offset.
-;-n      ; Comment out this line to not start with chart for "now".
+-n      ; Comment out this line to not start with chart for "now".
 
 _s      ; Which zodiac to use       ["_s" is tropical, "=s" is sidereal]
-:s Faga ; Sidereal zodiac offset    [Change "Faga" to desired ayanamsa ]
+:s Lahi ; Sidereal zodiac offset    [Change "Faga" to desired ayanamsa ]
 :sz     ; Zodiac display format     ["z" is sign, "d" is 0-360 deg, etc]
 -A 5    ; Number of aspects         [Change "5" to desired number      ]
--c Plac ; House system              [Change "Plac" to desired system   ]
+-c Camp ; House system              [Change "Plac" to desired system   ]
 _c3     ; 3D house boundaries       ["=c3" is 3D houses, "_c3" is 2D   ]
 _k      ; Ansi color text           ["=k" is color, "_k" is monochrome ]
 :d 48   ; Searching divisions       [Change "48" to desired divisions  ]
@@ -25,20 +25,20 @@ _b0     ; Print zodiac seconds      ["_b0" to minute, "=b0" to second  ]
 =b      ; Use ephemeris files       ["=b" uses them, "_b" doesn't      ]
 =0b     ; Disable old calculations  ["=0b" disables them, "_0b" allows ]
 :w 0    ; Wheel chart text rows     [Change "0" to desired wheel rows  ]
-:I 80   ; Text screen columns       [Change "80" to desired columns    ]
+:I 100   ; Text screen columns       [Change "80" to desired columns    ]
 -YQ 0   ; Text screen scroll limit  [Change "24" or set to "0" for none]
 _sr0    ; Latitudes or declinations ["_sr0" shows lat., "=sr0" declin. ]
 _Ys     ; Use plane of solar system ["_Ys" is ecliptic, "=Ys" is solar ]
-_Yn     ; Which Nodes and Lilith    ["_Yn" shows mean, "=Yn" shows true]
-=Yu0    ; Show eclipse information  ["=Yu0" shows, "_Yu0" doesn't show ]
+=Yn     ; Which Nodes and Lilith    ["_Yn" shows mean, "=Yn" shows true]
+_Yu0    ; Show eclipse information  ["=Yu0" shows, "_Yu0" doesn't show ]
 _Yr     ; Show rounded positions    ["=Yr" rounds, "_Yr" doesn't       ]
-_Yd     ; European date format      ["_Yd" is M/D/Y, "=Yd" is D-M-Y    ]
-_Yt     ; European time format      ["_Yt" is AM/PM, "=Yt" is 24 hour  ]
-_Yv     ; European length units     ["_Yv" is imperial, "=Yv" is metric]
+=Yd     ; European date format      ["_Yd" is M/D/Y, "=Yd" is D-M-Y    ]
+=Yt     ; European time format      ["_Yt" is AM/PM, "=Yt" is 24 hour  ]
+=Yv     ; European length units     ["_Yv" is imperial, "=Yv" is metric]
 =YC     ; Smart cusp displays       ["=YC" is smart, "_YC" is normal   ]
 =YO     ; Smart copy and printing   ["=YO" does it smart, "_YO" doesn't]
 =Y8     ; Clip text to end of line  ["=Y8" clips, "_Y8" doesn't clip   ]
--Ya0    ; Input character encoding  [0-3 is Default, IBM, Latin-1, UTF8]
+-Ya3    ; Input character encoding  [0-3 is Default, IBM, Latin-1, UTF8]
 -YP 0   ; Arabic part formula       ["1" is fixed, "0" checks if night ]
 =0n     ; Internet Web queries      ["=0n" disables them, "_0n" allows ]
 
@@ -211,7 +211,7 @@ _Xx              ; Thicker lines ["=Xx" is thicker, "_Xx" is thinner         ]
 :YX7 600         ; Esoteric ray column influence width
 :YXf 000000      ; Fonts to use [text, signs, houses, planets, aspects, naks.]
 :YXp 0           ; PostScript paper orientation ["-1" portrait, "1" landscape]
-:YXp0 8.5in 11in ; PostScript paper X and Y sizes
+:YXp0 8.27in 11.69in ; PostScript paper X and Y sizes
 
 _X               ; Graphics chart display ["_X" is text, "=X" is graphics]
 
