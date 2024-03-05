@@ -103,6 +103,30 @@ FILE *FileOpen(CONST char *szFile, int nFileMode, char *szPath)
       sprintf(szFileT, "%s.as", szFile);
     }
 
+#ifdef ENVIRON
+    // First look for the file in the directory indicated by the version
+    // specific system environment variable with _CONFIG postfix.
+    sprintf(sz, "%s%s_CONFIG", ENVIRONVER, szVerCore);
+    env = getenv(sz);
+    if (env && *env) {
+      sprintf(sz, "%s%c%s", env, chDirSep, szFileT);
+      file = fopen(sz, szMode);
+      if (file != NULL)
+        goto LDone;
+    }
+
+    // Then look in the directory in the general environment variable
+    // with _CONFIG postfix.
+    sprintf(sz, "%s_CONFIG", ENVIRONALL);
+    env = getenv(sz);
+    if (env && *env) {
+      sprintf(sz, "%s%c%s", env, chDirSep, szFileT);
+      file = fopen(sz, szMode);
+      if (file != NULL)
+        goto LDone;
+    }
+#endif
+   
     // First look for the file in the directory of the Astrolog executable.
     sprintf(sz, "%s", szExe);
     for (pch = sz; *pch; pch++)
