@@ -260,7 +260,7 @@ void ChartInDaySearch(flag fProg)
   division = (fYear || fProg) ? (us.nDivision + 9) / 10 : us.nDivision;
   divsiz = 24.0 / (real)division*60.0;
   divSign = cSign * us.nSignDiv;
-  if (us.fListAuto)
+   if (us.fListAuto)
     is.cci = 0;
 
   // If -dY in effect, then search through a range of years.
@@ -351,7 +351,7 @@ void ChartInDaySearch(flag fProg)
             occurcount++;
 
           // Does the current planet change into next or previous degree?
-
+      
           } else if (us.nSignDiv > 1) {
             j = (int)(cp1.obj[i] / (rDegMax / (real)divSign));
             k = (int)(cp2.obj[i] / (rDegMax / (real)divSign));
@@ -687,8 +687,8 @@ void ChartTransitSearch(flag fProg)
 {
   TransInfo ti[MAXINDAY], tiT, *pti;
   char sz[cchSzDef];
-  int M1, M2, Y1, Y2, counttotal = 0, occurcount, division, div, nAsp, fNoCusp,
-    nSkip = 0, i, j, k, s1, s2, s3, s4, s1prev = 0;
+  int M1, M2, Y1, Y2, counttotal = 0, occurcount, division, div, divSign, nAsp, fNoCusp,
+    nSkip = 0, i, j, k, l, s1, s2, s3, s4, s1prev = 0;
   real divsiz, daysiz, d, e1, e2, f1, f2, mc = is.MC, ob = is.OB;
   flag fPrint = fTrue;
   CP cpN = cp0;
@@ -713,6 +713,7 @@ void ChartTransitSearch(flag fProg)
   division = us.nDivision;
   if (!fProg && !fNoCusp)
     division = Max(division, 96);
+  divSign = cSign * us.nSignDiv;
   nAsp = is.fReturn ? aCon : us.nAsp;
   if (us.fParallel)
     nAsp = Min(nAsp, aOpp);
@@ -787,6 +788,48 @@ void ChartTransitSearch(flag fProg)
 
       for (i = 0; i <= is.nObj; i++) {
 
+        /* Does the current planet change into the next or previous sign? */
+
+        if (fProg && !us.fIgnoreSign && !FIgnore2(i) && occurcount < MAXINDAY) {
+          e1 = cp1.obj[i]; s1 = SFromZ(e1)-1;
+	  e2 = cp2.obj[i]; s2 = SFromZ(e2)-1;
+	  l = NAbs(s1-s2);
+          if (s1 != s2 && (l == 1 || l == cSign-1)) {
+	    pti->source = i;
+            pti->aspect = aSig;
+            pti->dest = s2+1;
+            pti->time
+	      = MinDistance(e1, (real)(cp1.dir[i] >= 0.0 ? s2 : s1) * 30.0)
+	      / MinDistance(e1, e2) * divsiz
+	      + (real)(div-1) * divsiz;
+            pti->posT = pti->posN = ZFromS(s1+1);
+            pti->retT = (cp1.dir[i] + cp2.dir[i]) / 2.0; // ??
+	    occurcount++; pti++;
+
+	    /* Does the current planet change into next or previous degree? */
+	    
+	  } else {
+            j = (int)(e1 / (rDegMax / (real)divSign));
+            k = (int)(e2 / (rDegMax / (real)divSign));
+            l = NAbs(j-k);
+            if (j != k && (l == 1 || l == divSign-1)) {
+              l = k;
+              if (j == k+1 || j == k-(divSign-1))
+                l = j;
+              pti->source = i;
+              pti->aspect = aDeg;
+              pti->dest = l;
+              pti->time
+		= MinDistance(e1, (real)l * (rDegMax / (real)divSign))
+		/ MinDistance(e1, e2) * divsiz
+		+ (real)(div-1) * divsiz;
+              pti->posT = pti->posN = e1;
+              pti->retT = (l == k) ? 1.0 : -1.0;  // ??
+              occurcount++; pti++;
+	    }
+	  }
+	}
+	
         // Check if 3D house change occurs during time segment.
 
         if (us.fHouse3D && !us.fIgnoreSign && !FIgnore2(i)) {
