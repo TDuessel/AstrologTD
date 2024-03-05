@@ -481,7 +481,7 @@ flag API DlgSaveChart()
   case cmdSavePS:
     ofn.lpstrTitle = "Save Chart PostScript";
     ofn.lpstrFilter =
-      "PostScript Text (*.eps)\0*.eps\0All Files (*.*)\0*.*\0";
+      "Encapsulated PostScript (*.eps)\0*.eps\0PostScript (*.ps)\0*.ps\0All Files (*.*)\0*.*\0";
     ofn.lpstrDefExt = "eps";
     sprintf(szFileName, "*.eps");
     break;
@@ -541,6 +541,12 @@ flag API DlgSaveChart()
     break;
   case cmdSavePS:
     gs.ft = ftPS;
+    int len;
+    if ((len = CchSz(ofn.lpstrFile)) >= 3 &&
+	NCompareSzI(&ofn.lpstrFile[len-3],".ps") == 0)
+      gs.fPSComplete = fTrue;
+    else
+      gs.fPSComplete = fFalse;
     us.fGraphics = wi.fRedraw = fTrue;
     break;
   case cmdSaveWire:

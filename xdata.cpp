@@ -67,7 +67,7 @@ GS gs = {
 #else
   ftBmp,
 #endif
-  fTrue, fTrue, fFalse, fFalse, fTrue, 000000, 0, 0, 0, 0, 0, 0, fFalse,
+  fFalse, fTrue, fFalse, fFalse, fTrue, 000000, 0, 0, 0, 0, 0, 0, fFalse,
   fTrue, fTrue, fFalse, fFalse, fFalse, fFalse, fFalse, fFalse, fFalse,
   fFalse, fFalse, fFalse, fFalse, fTrue, fFalse, fFalse, fFalse, fFalse,
   DEFAULTX, DEFAULTY,
