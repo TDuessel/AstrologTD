@@ -1489,14 +1489,14 @@ typedef struct _InDayInfo {
   short source;  // First planet
   short aspect;  // The aspect first planet makes with second planet
   int dest;      // Larger type because may store fraction of degree
-  char mon;      // Month of event
-  char day;      // Day of event
-  short yea;     // Year of event
   real time;     // Time of event in hours
   real pos1;     // Zodiac position of first planet
   real pos2;     // Zodiac position of second planet
   real ret1;     // First planet's zodiac position velocity
   real ret2;     // Second planet's zodiac position velocity
+  char mon;      // Month of event
+  char day;      // Day of event
+  short yea;     // Year of event
 } InDayInfo;
 
 typedef struct _TransInfo {
@@ -1507,6 +1507,10 @@ typedef struct _TransInfo {
   real posT;     // Zodiac position of transiting planet
   real posN;     // Zodiac position of natal planet
   real retT;     // Transiting planet's zodiac position velocity
+  real dummy1;
+  char dummy2;
+  char dummy3;
+  short dummy4;
 } TransInfo;
 
 typedef struct _AtlasEntry {

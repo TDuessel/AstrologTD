@@ -599,6 +599,8 @@ extern void DisplayRelation P((void));
 #define FAspectVoid(obj1, obj2, asp) (FBetween(asp, aCon, aSex) && \
   ((obj1) == oMoo || (obj2) == oMoo) && (obj1) <= oPlu && (obj2) <= oPlu)
 
+extern int CheckSignChange P((InDayInfo *, int, int, real, int, int, int));
+
 extern void ChartInDaySearch P((flag));
 extern void ChartTransitSearch P((flag));
 extern void ChartInDayHorizon P((void));

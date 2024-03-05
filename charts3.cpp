@@ -234,6 +234,169 @@ void PrintInDays(InDayInfo *pid, int occurcount, int counttotal, flag fProg)
   }
 }
 
+/* Check for sign change, degree change or change of decan/term.
+   Called from ChartInDaySearch() and ChartTransitSearch().
+*/
+int CheckSignChange(InDayInfo *pid, int i, int div, real divsiz, int month, int day, int year)
+{
+  int amNum, amTotal, j, k, l, s1, s2, occurcount = 0;
+  real amSize, e1, e2;
+  
+  e1 = cp1.obj[i]; e2 = cp2.obj[i];
+  s1 = (int)(e1 / rDegSign); // early sign index
+  s2 = (int)(e2 / rDegSign);
+
+  if(us.fListDecan) {
+	    
+    if(us.nDecanType > ddNone && us.nDecanType < dd27) {
+
+      int t1, t2;
+      real b1, b2;
+      CONST int *rgTerm;
+	      
+      switch (us.nDecanType) {
+      case ddEgypt: case ddPtolemy:
+	amNum = 5; // amSize = rDegSign/amNum;
+	rgTerm = ((us.nDecanType == ddEgypt) ? rgnTermEgypt : rgnTermPtolemy);
+ 	b1 = s1 * rDegSign;        // early bound
+	b2 = s2 * rDegSign;
+	j = s1 * amNum;            // early term index
+	k = s2 * amNum;
+	for(t1 = 0; e1 > (b1 += ((rgTerm[s1*2] >> (4-t1)*4) & 15)); t1++);
+	for(t2 = 0; e2 > (b2 += ((rgTerm[s2*2] >> (4-t2)*4) & 15)); t2++);
+	j += t1; k += t2;
+	break; 
+      case ddDecanR: case ddDecanS: case ddChaldea:
+	amNum = 3; amSize = rDegSign/amNum;
+	j = (int)(e1 / amSize);    // early amsha index
+	k = (int)(e2 / amSize);    // late amsha index
+	break;
+      case ddNavamsa:
+	amNum = 9; amSize = rDegSign/amNum;
+	j = (int)(e1 / amSize);
+	k = (int)(e2 / amSize);
+      case dd12: case ddDwad:
+	amNum = 12; amSize = rDegSign/amNum;
+	j = (int)(e1 / amSize);
+	k = (int)(e2 / amSize);
+	break;
+      }
+	      
+      l = NAbs(j-k);
+      amTotal = amNum * cSign;
+      if (j != k && (l == 1 || l == amTotal-1)) {
+	l = ((j + 1) % amTotal == k ? k : j);     // following amsha index
+	pid->source = i;
+	pid->ret1 = pid->ret2 = (l == k) ? 1.0 : -1.0;
+	pid->pos1 = pid->pos2 = (real)l * amSize; // overw. for ddEgypt..
+		
+	switch (us.nDecanType) {
+	case ddEgypt: case ddPtolemy:
+	  pid->aspect = aRul;
+	  pid->dest = ((rgTerm[s2*2+1] >> (4-t2)*4) & 15);  // late term ruler
+	  if(l==k)
+	    pid->pos1 = pid->pos2 = b1; // leading term upper border!
+	  else
+	    pid->pos1 = pid->pos2 = b2; // leading term upper border!
+	  break;
+	case ddDecanR:
+	  pid->aspect = aRul;
+	  pid->dest = rules[(k/3+(k%3)*4)%12+1];   // planet number
+	  break;
+	case ddDecanS:
+	  pid->aspect = aDec;
+	  pid->dest = (k/3+(k%3)*4)%12+1;          // sign number
+	  break;
+	case ddChaldea:
+	  pid->aspect = aRul;
+	  pid->dest = (0x6723415 >> (k%7)*4) & 15; // planet number
+	  break;
+	case ddNavamsa:
+	  pid->aspect = aDec;
+	  pid->dest = k%12+1;
+	  break;
+	case dd12:
+	  pid->aspect = aDec;
+	  pid->dest = k%12+1;
+	  break;
+	case ddDwad:
+	  pid->aspect = aDec;
+	  pid->dest = (k/12+(k%12))%12+1;
+	  break;
+	default:
+	  pid->aspect = 0;
+	  pid->dest = 0;
+	}
+
+	pid->mon = month;
+	pid->day = day;
+	pid->yea = year;
+	pid->time
+	  = MinDistance(e1, pid->pos1)      // ???
+	  / MinDistance(e1, e2) * divsiz
+	  + (real)(div-1) * divsiz;
+	occurcount++;
+      }
+    }
+  } else {
+
+    // Does the current planet change into the next or previous sign?
+
+    if (!us.fIgnoreSign && FAllow(i)) {
+	  
+      l = NAbs(s1-s2);
+      if (s1 != s2 && (l == 1 || l == cSign-1)) {
+	
+	pid->source = i;
+	pid->aspect = aSig;
+	pid->dest = s2+1;
+	pid->time 
+	  = MinDistance(e1, (real)(cp1.dir[i] >= 0.0 ? s2 : s1) * rDegSign)
+	  / MinDistance(e1, e2)*divsiz
+	  + (real)(div-1)*divsiz;
+	pid->pos1 = pid->pos2 = ZFromS(s1+1);
+	pid->ret1 = cp1.dir[i];
+	pid->ret2 = cp2.dir[i];
+	pid->mon = month;
+	pid->day = day;
+	pid->yea = year;
+	occurcount++;
+
+	// Does the current planet change into next or previous degree?
+      
+      } else if (us.nSignDiv > 1) {
+	
+	amNum = us.nSignDiv;
+	amSize = rDegSign/amNum;
+	amTotal = cSign*amNum;
+	j = (int)(e1 / amSize);    // early amsha index
+	k = (int)(e2 / amSize);    // late amsha index
+	l = NAbs(j-k);
+
+	if (j != k && (l == 1 || l == amTotal-1)) {
+
+	  l = ((j + 1) % amTotal == k ? k : j);     // following amsha index
+
+	  pid->source = i;
+	  pid->aspect = aDeg;
+	  pid->dest = l;
+	  pid->time
+	    = MinDistance(e1, (real)l * amSize)
+	    / MinDistance(e1, e2)*divsiz
+	    + (real)(div-1)*divsiz;
+	  pid->pos1 = pid->pos2 = cp1.obj[i];
+	  pid->ret1 = pid->ret2 =
+	    (l == k) ? 1.0 : -1.0;
+	  pid->mon = month;
+	  pid->day = day;
+	  pid->yea = year;
+	  occurcount++;
+	}
+      }
+    }
+  }
+  return occurcount;
+}
 
 // Search through a day or longer period, and print out the times of exact
 // aspects among planets during that day, as specified with the -d switch,
@@ -331,61 +494,20 @@ void ChartInDaySearch(flag fProg)
         s1 = SFromZ(cp1.obj[i])-1;
         s2 = SFromZ(cp2.obj[i])-1;
 
-        // Does the current planet change into the next or previous sign?
-
-        if (!us.fIgnoreSign && FAllow(i) && occurcount < maxinday) {
-          l = NAbs(s1-s2);
-          if (s1 != s2 && (l == 1 || l == cSign-1)) {
-            pid[occurcount].source = i;
-            pid[occurcount].aspect = aSig;
-            pid[occurcount].dest = s2+1;
-            pid[occurcount].time = MinDistance(cp1.obj[i],
-              (real)(cp1.dir[i] >= 0.0 ? s2 : s1) * 30.0) / MinDistance(
-              cp1.obj[i], cp2.obj[i])*divsiz + (real)(div-1)*divsiz;
-            pid[occurcount].pos1 = pid[occurcount].pos2 = ZFromS(s1+1);
-            pid[occurcount].ret1 = cp1.dir[i];
-            pid[occurcount].ret2 = cp2.dir[i];
-            pid[occurcount].mon = mon0;
-            pid[occurcount].day = day0;
-            pid[occurcount].yea = yea0;
-            occurcount++;
-
-          // Does the current planet change into next or previous degree?
-      
-          } else if (us.nSignDiv > 1) {
-            j = (int)(cp1.obj[i] / (rDegMax / (real)divSign));
-            k = (int)(cp2.obj[i] / (rDegMax / (real)divSign));
-            l = NAbs(j-k);
-            if (j != k && (l == 1 || l == divSign-1)) {
-              l = k;
-              if (j == k+1 || j == k-(divSign-1))
-                l = j;
-              pid[occurcount].source = i;
-              pid[occurcount].aspect = aDeg;
-              pid[occurcount].dest = l;
-              pid[occurcount].time = MinDistance(cp1.obj[i],
-                (real)l * (rDegMax / (real)divSign)) / MinDistance(cp1.obj[i],
-                cp2.obj[i])*divsiz + (real)(div-1)*divsiz;
-              pid[occurcount].pos1 = pid[occurcount].pos2 = cp1.obj[i];
-              pid[occurcount].ret1 = pid[occurcount].ret2 =
-                (l == k) ? 1.0 : -1.0;
-              pid[occurcount].mon = mon0;
-              pid[occurcount].day = day0;
-              pid[occurcount].yea = yea0;
-              occurcount++;
-            }
-          }
-        }
-
+	/* Does the current planet make a sign or degree change? */
+	
+        if (!us.fIgnoreSign && occurcount < MAXINDAY)
+	  occurcount += CheckSignChange(&pid[occurcount], i, div, divsiz, mon0, day0, yea0);
+	
         // Does the current planet go retrograde or direct?
 
         if (!us.fIgnoreDir && (cp1.dir[i] < 0.0) != (cp2.dir[i] < 0.0) &&
-          FAllow(i) && occurcount < maxinday) {
+	    FAllow(i) && occurcount < maxinday) {
           pid[occurcount].source = i;
           pid[occurcount].aspect = aDir;
           pid[occurcount].dest = cp2.dir[i] < 0.0;
           pid[occurcount].time = RAbs(cp1.dir[i])/(RAbs(cp1.dir[i])+
-            RAbs(cp2.dir[i]))*divsiz + (real)(div-1)*divsiz;
+						   RAbs(cp2.dir[i]))*divsiz + (real)(div-1)*divsiz;
           pid[occurcount].pos1 = pid[occurcount].pos2 =
             RAbs(cp1.dir[i])/(RAbs(cp1.dir[i])+RAbs(cp2.dir[i])) *
             (cp2.obj[i]-cp1.obj[i]) + cp1.obj[i];
@@ -399,12 +521,12 @@ void ChartInDaySearch(flag fProg)
         // Does the current planet reach maximum or minimum latitude?
 
         if (!us.fIgnoreDiralt && (cp1.diralt[i] < 0.0) != (cp2.diralt[i] < 0.0)
-          && FAllow(i) && occurcount < maxinday) {
+	    && FAllow(i) && occurcount < maxinday) {
           pid[occurcount].source = i;
           pid[occurcount].aspect = aAlt;
           pid[occurcount].dest = cp2.diralt[i] < 0.0;
           pid[occurcount].time = RAbs(cp1.diralt[i])/(RAbs(cp1.diralt[i])+
-            RAbs(cp2.diralt[i]))*divsiz + (real)(div-1)*divsiz;
+						      RAbs(cp2.diralt[i]))*divsiz + (real)(div-1)*divsiz;
           pid[occurcount].pos1 = pid[occurcount].pos2 =
             RAbs(cp1.diralt[i])/(RAbs(cp1.diralt[i])+RAbs(cp2.diralt[i])) *
             (cp2.alt[i]-cp1.alt[i]) + cp1.alt[i];
@@ -418,12 +540,12 @@ void ChartInDaySearch(flag fProg)
         // Does the current planet reach maximum or minimum distance?
 
         if (!us.fIgnoreDirlen && (cp1.dirlen[i] < 0.0) != (cp2.dirlen[i] < 0.0)
-          && FAllow(i) && occurcount < maxinday) {
+	    && FAllow(i) && occurcount < maxinday) {
           pid[occurcount].source = i;
           pid[occurcount].aspect = aLen;
           pid[occurcount].dest = (cp2.dirlen[i] < 0.0);
           pid[occurcount].time = RAbs(cp1.dirlen[i])/(RAbs(cp1.dirlen[i])+
-            RAbs(cp2.dirlen[i]))*divsiz + (real)(div-1)*divsiz;
+						      RAbs(cp2.dirlen[i]))*divsiz + (real)(div-1)*divsiz;
           pid[occurcount].pos1 = pid[occurcount].pos2 =
             RAbs(cp1.dirlen[i])/(RAbs(cp1.dirlen[i])+RAbs(cp2.dirlen[i])) *
             (cp2.obj[i]-cp1.obj[i]) + cp1.obj[i];
@@ -437,8 +559,8 @@ void ChartInDaySearch(flag fProg)
         // Does the current planet cross zero latitude?
 
         if (!us.fIgnoreAlt0 && ((cp1.alt[i] < 0.0 && cp2.alt[i] >= 0.0) ||
-          (cp1.alt[i] >= 0.0 && cp2.alt[i] < 0.0)) &&
-          FAllow(i) && occurcount < maxinday) {
+				(cp1.alt[i] >= 0.0 && cp2.alt[i] < 0.0)) &&
+	    FAllow(i) && occurcount < maxinday) {
           pid[occurcount].source = i;
           pid[occurcount].aspect = aNod;
           pid[occurcount].dest = (cp1.alt[i] >= 0.0);
@@ -446,7 +568,7 @@ void ChartInDaySearch(flag fProg)
             (real)(div-1)*divsiz;
           pid[occurcount].pos1 = pid[occurcount].pos2 =
             Mod(cp1.obj[i] + cp1.alt[i]/(cp1.alt[i]-cp2.alt[i]) *
-            MinDifference(cp1.obj[i], cp2.obj[i]));
+		MinDifference(cp1.obj[i], cp2.obj[i]));
           pid[occurcount].ret1 = cp1.dir[i]; pid[occurcount].ret2 = cp2.dir[i];
           pid[occurcount].mon = mon0;
           pid[occurcount].day = day0;
@@ -458,169 +580,169 @@ void ChartInDaySearch(flag fProg)
 
         for (j = i+1; j <= is.nObj; j++)
           if (!FIgnore(j) && (fProg || us.fGraphAll || FThing(j))) {
-          if (!us.fParallel) {
+	    if (!us.fParallel) {
 
-          for (k = 1; k <= us.nAsp; k++) if (FAcceptAspect(i, -k, j)) {
-            d1 = cp1.obj[i]; d2 = cp2.obj[i];
-            e1 = cp1.obj[j]; e2 = cp2.obj[j];
-            if (MinDistance(d1, d2) < MinDistance(e1, e2)) {
-              SwapR(&d1, &e1);
-              SwapR(&d2, &e2);
-            }
+	      for (k = 1; k <= us.nAsp; k++) if (FAcceptAspect(i, -k, j)) {
+		  d1 = cp1.obj[i]; d2 = cp2.obj[i];
+		  e1 = cp1.obj[j]; e2 = cp2.obj[j];
+		  if (MinDistance(d1, d2) < MinDistance(e1, e2)) {
+		    SwapR(&d1, &e1);
+		    SwapR(&d2, &e2);
+		  }
 
-            // Search each potential aspect in turn. First subtract the size
-            // of the aspect from the angular difference, so can then treat it
-            // like a conjunction.
+		  // Search each potential aspect in turn. First subtract the size
+		  // of the aspect from the angular difference, so can then treat it
+		  // like a conjunction.
 
-            if (MinDistance(e1, Mod(d1-rAspAngle[k])) <
-                MinDistance(e2, Mod(d2+rAspAngle[k]))) {
-              e1 = Mod(e1+rAspAngle[k]);
-              e2 = Mod(e2+rAspAngle[k]);
-            } else {
-              e1 = Mod(e1-rAspAngle[k]);
-              e2 = Mod(e2-rAspAngle[k]);
-            }
+		  if (MinDistance(e1, Mod(d1-rAspAngle[k])) <
+		      MinDistance(e2, Mod(d2+rAspAngle[k]))) {
+		    e1 = Mod(e1+rAspAngle[k]);
+		    e2 = Mod(e2+rAspAngle[k]);
+		  } else {
+		    e1 = Mod(e1-rAspAngle[k]);
+		    e2 = Mod(e2-rAspAngle[k]);
+		  }
 
-            // Check to see if the aspect actually occurs during this segment,
-            // making sure to take into account if one or both planets are
-            // retrograde or if they cross the Aries point.
+		  // Check to see if the aspect actually occurs during this segment,
+		  // making sure to take into account if one or both planets are
+		  // retrograde or if they cross the Aries point.
 
-            f1 = e1-d1;
-            if (RAbs(f1) > rDegHalf)
-              f1 -= RSgn(f1)*rDegMax;
-            f2 = e2-d2;
-            if (RAbs(f2) > rDegHalf)
-              f2 -= RSgn(f2)*rDegMax;
-            if (MinDistance(Midpoint(d1, d2), Midpoint(e1, e2)) < rDegQuad &&
-              RSgn(f1) != RSgn(f2) && occurcount < maxinday) {
-              pid[occurcount].source = i;
-              pid[occurcount].aspect = k;
-              pid[occurcount].dest = j;
-              pid[occurcount].mon = mon0;
-              pid[occurcount].day = day0;
-              pid[occurcount].yea = yea0;
+		  f1 = e1-d1;
+		  if (RAbs(f1) > rDegHalf)
+		    f1 -= RSgn(f1)*rDegMax;
+		  f2 = e2-d2;
+		  if (RAbs(f2) > rDegHalf)
+		    f2 -= RSgn(f2)*rDegMax;
+		  if (MinDistance(Midpoint(d1, d2), Midpoint(e1, e2)) < rDegQuad &&
+		      RSgn(f1) != RSgn(f2) && occurcount < maxinday) {
+		    pid[occurcount].source = i;
+		    pid[occurcount].aspect = k;
+		    pid[occurcount].dest = j;
+		    pid[occurcount].mon = mon0;
+		    pid[occurcount].day = day0;
+		    pid[occurcount].yea = yea0;
 
-              // Horray! The aspect occurs sometime during the interval. Now
-              // just have to solve an equation in two variables to find out
-              // where their "lines" of motion cross, i.e. the aspect's time.
+		    // Horray! The aspect occurs sometime during the interval. Now
+		    // just have to solve an equation in two variables to find out
+		    // where their "lines" of motion cross, i.e. the aspect's time.
 
-              f1 = d2-d1;
-              if (RAbs(f1) > rDegHalf)
-                f1 -= RSgn(f1)*rDegMax;
-              f2 = e2-e1;
-              if (RAbs(f2) > rDegHalf)
-                f2 -= RSgn(f2)*rDegMax;
-              g = (RAbs(d1-e1) > rDegHalf ?
-                (d1-e1)-RSgn(d1-e1)*rDegMax : d1-e1)/(f2-f1);
-              pid[occurcount].time = g*divsiz + (real)(div-1)*divsiz;
-              pid[occurcount].pos1 = Mod(cp1.obj[i] +
-                RSgn(cp2.obj[i]-cp1.obj[i])*
-                (RAbs(cp2.obj[i]-cp1.obj[i]) > rDegHalf ? -1 : 1)*
-                RAbs(g)*MinDistance(cp1.obj[i], cp2.obj[i]));
-              pid[occurcount].pos2 = Mod(cp1.obj[j] +
-                RSgn(cp2.obj[j]-cp1.obj[j])*
-                (RAbs(cp2.obj[j]-cp1.obj[j]) > rDegHalf ? -1 : 1)*
-                RAbs(g)*MinDistance(cp1.obj[j], cp2.obj[j]));
-              pid[occurcount].ret1 = (cp1.dir[i] + cp2.dir[i]) / 2.0;
-              pid[occurcount].ret2 = (cp1.dir[j] + cp2.dir[j]) / 2.0;
-              occurcount++;
-            }
-          }
+		    f1 = d2-d1;
+		    if (RAbs(f1) > rDegHalf)
+		      f1 -= RSgn(f1)*rDegMax;
+		    f2 = e2-e1;
+		    if (RAbs(f2) > rDegHalf)
+		      f2 -= RSgn(f2)*rDegMax;
+		    g = (RAbs(d1-e1) > rDegHalf ?
+			 (d1-e1)-RSgn(d1-e1)*rDegMax : d1-e1)/(f2-f1);
+		    pid[occurcount].time = g*divsiz + (real)(div-1)*divsiz;
+		    pid[occurcount].pos1 = Mod(cp1.obj[i] +
+					       RSgn(cp2.obj[i]-cp1.obj[i])*
+					       (RAbs(cp2.obj[i]-cp1.obj[i]) > rDegHalf ? -1 : 1)*
+					       RAbs(g)*MinDistance(cp1.obj[i], cp2.obj[i]));
+		    pid[occurcount].pos2 = Mod(cp1.obj[j] +
+					       RSgn(cp2.obj[j]-cp1.obj[j])*
+					       (RAbs(cp2.obj[j]-cp1.obj[j]) > rDegHalf ? -1 : 1)*
+					       RAbs(g)*MinDistance(cp1.obj[j], cp2.obj[j]));
+		    pid[occurcount].ret1 = (cp1.dir[i] + cp2.dir[i]) / 2.0;
+		    pid[occurcount].ret2 = (cp1.dir[j] + cp2.dir[j]) / 2.0;
+		    occurcount++;
+		  }
+		}
 
-          } else {
+	    } else {
 
-          for (k = 1; k <= Min(us.nAsp, aOpp); k++)
-            if (FAcceptAspect(i, -k, j)) {
+	      for (k = 1; k <= Min(us.nAsp, aOpp); k++)
+		if (FAcceptAspect(i, -k, j)) {
 
-            d1 = cp1.alt[i]; d2 = cp2.alt[i];
-            e1 = cp1.alt[j]; e2 = cp2.alt[j];
-            if (!us.fEquator2 && !us.fParallel2) {
-              // If have ecliptic latitude and want declination, convert.
-              g = cp1.obj[i]; EclToEqu(&g, &d1);
-              g = cp2.obj[i]; EclToEqu(&g, &d2);
-              g = cp1.obj[j]; EclToEqu(&g, &e1);
-              g = cp2.obj[j]; EclToEqu(&g, &e2);
-            } else if (us.fEquator2 && us.fParallel2) {
-              // If have equatorial declination and want latitude, convert.
-              g = cp1.obj[i]; EquToEcl(&g, &d1);
-              g = cp2.obj[i]; EquToEcl(&g, &d2);
-              g = cp1.obj[j]; EquToEcl(&g, &e1);
-              g = cp2.obj[j]; EquToEcl(&g, &e2);
-            }
+		  d1 = cp1.alt[i]; d2 = cp2.alt[i];
+		  e1 = cp1.alt[j]; e2 = cp2.alt[j];
+		  if (!us.fEquator2 && !us.fParallel2) {
+		    // If have ecliptic latitude and want declination, convert.
+		    g = cp1.obj[i]; EclToEqu(&g, &d1);
+		    g = cp2.obj[i]; EclToEqu(&g, &d2);
+		    g = cp1.obj[j]; EclToEqu(&g, &e1);
+		    g = cp2.obj[j]; EclToEqu(&g, &e2);
+		  } else if (us.fEquator2 && us.fParallel2) {
+		    // If have equatorial declination and want latitude, convert.
+		    g = cp1.obj[i]; EquToEcl(&g, &d1);
+		    g = cp2.obj[i]; EquToEcl(&g, &d2);
+		    g = cp1.obj[j]; EquToEcl(&g, &e1);
+		    g = cp2.obj[j]; EquToEcl(&g, &e2);
+		  }
 
-            // Search each potential aspect in turn. Negate the sign of the
-            // aspect if needed, so can then treat it like a parallel.
+		  // Search each potential aspect in turn. Negate the sign of the
+		  // aspect if needed, so can then treat it like a parallel.
 
-            if (k == aOpp) {
-              neg(e1);
-              neg(e2);
-            }
+		  if (k == aOpp) {
+		    neg(e1);
+		    neg(e2);
+		  }
 
-            // Check if the aspect actually occurs during this segment, making
-            // sure to take into account if one or both planets are retrograde.
+		  // Check if the aspect actually occurs during this segment, making
+		  // sure to take into account if one or both planets are retrograde.
 
-            f1 = e1-d1;
-            f2 = e2-d2;
-            if (RSgn(f1) != RSgn(f2) && occurcount < maxinday) {
-              pid[occurcount].source = i;
-              pid[occurcount].aspect = k;
-              pid[occurcount].dest = j;
-              pid[occurcount].mon = mon0;
-              pid[occurcount].day = day0;
-              pid[occurcount].yea = yea0;
+		  f1 = e1-d1;
+		  f2 = e2-d2;
+		  if (RSgn(f1) != RSgn(f2) && occurcount < maxinday) {
+		    pid[occurcount].source = i;
+		    pid[occurcount].aspect = k;
+		    pid[occurcount].dest = j;
+		    pid[occurcount].mon = mon0;
+		    pid[occurcount].day = day0;
+		    pid[occurcount].yea = yea0;
 
-              // Horray! The aspect occurs sometime during the interval. Now
-              // just have to solve an equation in two variables to find out
-              // where their "lines" of motion cross, i.e. the aspect's time.
+		    // Horray! The aspect occurs sometime during the interval. Now
+		    // just have to solve an equation in two variables to find out
+		    // where their "lines" of motion cross, i.e. the aspect's time.
 
-              f1 = d2-d1;
-              f2 = e2-e1;
-              g = (d1-e1)/(f2-f1);
-              if (k == aOpp) {
-                neg(e1);
-                neg(e2);
-              }
-              pid[occurcount].time = g*divsiz + (real)(div-1)*divsiz;
-              pid[occurcount].pos1 = d1 + (d2 - d1)*g;
-              pid[occurcount].pos2 = e1 + (e2 - e1)*g;
-              pid[occurcount].ret1 = (cp1.diralt[i] + cp2.diralt[i]) / 2.0;
-              pid[occurcount].ret2 = (cp1.diralt[j] + cp2.diralt[j]) / 2.0;
-              occurcount++;
-            }
-          }
-          } // us.fParallel
+		    f1 = d2-d1;
+		    f2 = e2-e1;
+		    g = (d1-e1)/(f2-f1);
+		    if (k == aOpp) {
+		      neg(e1);
+		      neg(e2);
+		    }
+		    pid[occurcount].time = g*divsiz + (real)(div-1)*divsiz;
+		    pid[occurcount].pos1 = d1 + (d2 - d1)*g;
+		    pid[occurcount].pos2 = e1 + (e2 - e1)*g;
+		    pid[occurcount].ret1 = (cp1.diralt[i] + cp2.diralt[i]) / 2.0;
+		    pid[occurcount].ret2 = (cp1.diralt[j] + cp2.diralt[j]) / 2.0;
+		    occurcount++;
+		  }
+		}
+	    } // us.fParallel
 
-          // Check for planet pairs equidistant from each other.
+	    // Check for planet pairs equidistant from each other.
 
-          if (!us.fIgnoreDisequ) {
-            d1 = cp1.dist[i]; d2 = cp2.dist[i];
-            e1 = cp1.dist[j]; e2 = cp2.dist[j];
-            f1 = e1-d1; f2 = e2-d2;
-            if (RSgn(f1) != RSgn(f2) && occurcount < maxinday) {
-              pid[occurcount].source = i;
-              pid[occurcount].aspect = aDis;
-              pid[occurcount].dest = j;
-              pid[occurcount].mon = mon0;
-              pid[occurcount].day = day0;
-              pid[occurcount].yea = yea0;
-              f1 = d2-d1; f2 = e2-e1;
-              g = (d1-e1)/(f2-f1);
-              pid[occurcount].time = g*divsiz + (real)(div-1)*divsiz;
-              pid[occurcount].pos1 = Mod(cp1.obj[i] +
-                RSgn(cp2.obj[i]-cp1.obj[i])*
-                (RAbs(cp2.obj[i]-cp1.obj[i]) > rDegHalf ? -1 : 1)*
-                RAbs(g)*MinDistance(cp1.obj[i], cp2.obj[i]));
-              pid[occurcount].pos2 = Mod(cp1.obj[j] +
-                RSgn(cp2.obj[j]-cp1.obj[j])*
-                (RAbs(cp2.obj[j]-cp1.obj[j]) > rDegHalf ? -1 : 1)*
-                RAbs(g)*MinDistance(cp1.obj[j], cp2.obj[j]));
-              pid[occurcount].ret1 = (cp1.dir[i] + cp2.dir[i]) / 2.0;
-              pid[occurcount].ret2 = (cp1.dir[j] + cp2.dir[j]) / 2.0;
-              occurcount++;
-            }
-          }
-        }
-      } // i
+	    if (!us.fIgnoreDisequ) {
+	      d1 = cp1.dist[i]; d2 = cp2.dist[i];
+	      e1 = cp1.dist[j]; e2 = cp2.dist[j];
+	      f1 = e1-d1; f2 = e2-d2;
+	      if (RSgn(f1) != RSgn(f2) && occurcount < maxinday) {
+		pid[occurcount].source = i;
+		pid[occurcount].aspect = aDis;
+		pid[occurcount].dest = j;
+		pid[occurcount].mon = mon0;
+		pid[occurcount].day = day0;
+		pid[occurcount].yea = yea0;
+		f1 = d2-d1; f2 = e2-e1;
+		g = (d1-e1)/(f2-f1);
+		pid[occurcount].time = g*divsiz + (real)(div-1)*divsiz;
+		pid[occurcount].pos1 = Mod(cp1.obj[i] +
+					   RSgn(cp2.obj[i]-cp1.obj[i])*
+					   (RAbs(cp2.obj[i]-cp1.obj[i]) > rDegHalf ? -1 : 1)*
+					   RAbs(g)*MinDistance(cp1.obj[i], cp2.obj[i]));
+		pid[occurcount].pos2 = Mod(cp1.obj[j] +
+					   RSgn(cp2.obj[j]-cp1.obj[j])*
+					   (RAbs(cp2.obj[j]-cp1.obj[j]) > rDegHalf ? -1 : 1)*
+					   RAbs(g)*MinDistance(cp1.obj[j], cp2.obj[j]));
+		pid[occurcount].ret1 = (cp1.dir[i] + cp2.dir[i]) / 2.0;
+		pid[occurcount].ret2 = (cp1.dir[j] + cp2.dir[j]) / 2.0;
+		occurcount++;
+	      }
+	    }
+	  }
+	} // i
     } // div
 
     // After all the aspects and evemts in the day have been located, sort
@@ -687,7 +809,7 @@ void ChartTransitSearch(flag fProg)
 {
   TransInfo ti[MAXINDAY], tiT, *pti;
   char sz[cchSzDef];
-  int M1, M2, Y1, Y2, counttotal = 0, occurcount, division, div, nAsp, fNoCusp,
+  int M1, M2, Y1, Y2, counttotal = 0, occurcount, occ, division, div, nAsp, fNoCusp,
     nSkip = 0, i, j, k, l, s1, s2, s3, s4, s1prev = 0;
   real divsiz, daysiz, d, e1, e2, f1, f2, mc = is.MC, ob = is.OB;
   flag fPrint = fTrue;
@@ -787,155 +909,13 @@ void ChartTransitSearch(flag fProg)
       // stars can be transited, but they can't make transits themselves.
 
       for (i = 0; i <= is.nObj; i++) {
-
+	
 	/* For progressions we are interested in sign and degree changes etc. */
 
-        if (fProg && !us.fIgnoreSign && !FIgnore2(i) && occurcount < MAXINDAY) {
-
-	  int amNum, amTotal;
-	  real amSize;
-	  
-	  if(us.fListDecan) {
-	    
-	    if(us.nDecanType > ddNone && us.nDecanType < dd27) {
-
-	      int t1, t2;
-	      real b1, b2;
-	      CONST int *rgTerm;
-	      
-	      e1 = cp1.obj[i]; e2 = cp2.obj[i];
-
-	      switch (us.nDecanType) {
-	      case ddEgypt: case ddPtolemy:
-		amNum = 5; // amSize = rDegSign/amNum;
-		rgTerm = ((us.nDecanType == ddEgypt) ? rgnTermEgypt : rgnTermPtolemy);
-		s1 = (int)(e1 / rDegSign); // early sign index
-		s2 = (int)(e2 / rDegSign);
-		b1 = s1 * rDegSign;        // early bound
-		b2 = s2 * rDegSign;
-		j = s1 * amNum;            // early term index
-		k = s2 * amNum;
-		for(t1 = 0; e1 > (b1 += ((rgTerm[s1*2] >> (4-t1)*4) & 15)); t1++);
-		for(t2 = 0; e2 > (b2 += ((rgTerm[s2*2] >> (4-t2)*4) & 15)); t2++);
-		j += t1; k += t2;
-		break; 
-	      case ddDecanR: case ddDecanS: case ddChaldea:
-		amNum = 3; amSize = rDegSign/amNum;
-		j = (int)(e1 / amSize);    // early amsha index
-		k = (int)(e2 / amSize);    // late amsha index
-		break;
-	      case ddNavamsa:
-		amNum = 9; amSize = rDegSign/amNum;
-		j = (int)(e1 / amSize);
-		k = (int)(e2 / amSize);
-	      case dd12: case ddDwad:
-		amNum = 12; amSize = rDegSign/amNum;
-		j = (int)(e1 / amSize);
-		k = (int)(e2 / amSize);
-		break;
-	      }
-	      
-	      l = NAbs(j-k);
-	      amTotal = amNum * cSign;
-	      if (j != k && (l == 1 || l == amTotal-1)) {
-		l = ((j + 1) % amTotal == k ? k : j);     // following amsha index
-		pti->source = i;
-		pti->retT = (l == k) ? 1.0 : -1.0;
-		pti->posT = pti->posN = (real)l * amSize; // overw. for ddEgypt..
-		
-		switch (us.nDecanType) {
-		case ddEgypt: case ddPtolemy:
-		  pti->aspect = aRul;
-		  pti->dest = ((rgTerm[s2*2+1] >> (4-t2)*4) & 15);  // late term ruler
-		  if(l==k)
-		    pti->posT = pti->posN = b1; // leading bound!
-		  else
-		    pti->posT = pti->posN = b2; // leading bound!
-		  break;
-		case ddDecanR:
-		  pti->aspect = aRul;
-		  pti->dest = rules[(k/3+(k%3)*4)%12+1];   // planet number
-		  break;
-		case ddDecanS:
-		  pti->aspect = aDec;
-		  pti->dest = (k/3+(k%3)*4)%12+1;          // sign number
-		  break;
-		case ddChaldea:
-		  pti->aspect = aRul;
-		  pti->dest = (0x6723415 >> (k%7)*4) & 15; // planet number
-		  break;
-		case ddNavamsa:
-		  pti->aspect = aDec;
-		  pti->dest = k%12+1;
-		  break;
-		case dd12:
-		  pti->aspect = aDec;
-		  pti->dest = k%12+1;
-		  break;
-		case ddDwad:
-		  pti->aspect = aDec;
-		  pti->dest = (k/12+(k%12))%12+1;
-		  break;
-		default:
-		  pti->aspect = 0;
-		  pti->dest = 0;
-		}
-	      
-		pti->time
-		  = MinDistance(e1, pti->posT)
-		  / MinDistance(e1, e2) * divsiz
-		  + (real)(div-1) * divsiz;
-		occurcount++; pti++;
-	      }
-	    }
-
-	  } else {
-	    
-	    e1 = cp1.obj[i]; e2 = cp2.obj[i]; 
-	    s1 = SFromZ(e1)-1; s2 = SFromZ(e2)-1; // sign index
-	    l = NAbs(s1-s2);
-
-	    // check for sign changes
-	    if (s1 != s2 && (l == 1 || l == cSign-1)) {
-	      
-	      pti->source = i;
-	      pti->aspect = aSig;
-	      pti->dest = s2+1; // LATE SIGN NUMBER für aSig!
-	      pti->time
-		= MinDistance(e1, (real)((s1 + 1) % cSign == s2 ? s2 : s1) * rDegSign)
-		/ MinDistance(e1, e2) * divsiz
-		+ (real)(div-1) * divsiz;
-	      pti->posT = pti->posN = ZFromS(s1+1);        // ggf. +29.999 siehe PrintAspect()
-	      pti->retT = (cp1.dir[i] + cp2.dir[i]) / 2.0; // muss das genau sein für aSig?
-	      occurcount++; pti++;
-	      
-	      // check for arbitrary division changes
-	    } else if(us.nSignDiv > 0) {
-	      amNum = us.nSignDiv;
-	      amTotal = amNum*cSign;
-	      amSize = rDegSign/amNum;
-	      j = (int)(e1 / amSize);
-	      k = (int)(e2 / amSize);
-	      l = NAbs(j-k);
-
-	      if (j != k && (l == 1 || l == amTotal-1)) {
-
-		l = ((j + 1) % amTotal == k ? k : j);
-		  
-		pti->source = i;
-		pti->aspect = aDeg;
-		pti->dest = l; // INDEX VORDERES AMSHA für aDeg!
-		pti->time
-		  = MinDistance(e1, (real)l * amSize)
-		  / MinDistance(e1, e2) * divsiz
-		  + (real)(div-1) * divsiz;
-		pti->posT = pti->posN = e1;
-		pti->retT = (l == k) ? 1.0 : -1.0;  // reicht das so für aDeg?
-		occurcount++; pti++;
-	      }
-	    }
+        if (fProg && !us.fIgnoreSign && !FIgnore2(i) && occurcount < MAXINDAY)
+	  if(CheckSignChange((InDayInfo*)pti, i, div, divsiz, 0, 0, 0)) {
+	    occurcount++; pti++;
 	  }
-	}
 	
         // Check if 3D house change occurs during time segment.
 
