@@ -737,6 +737,12 @@ void PrintAspect(int obj1, real pos1, real ret1, int asp,
   sprintf(sz, " %c", ret1 > 0.0 ? '(' : (ret1 < 0.0 ? '[' : '<')); PrintSz(sz);
   if (asp == aSig && ret1 > 0.0)
     pos1 += 29.999;
+  if ((asp == aDec || asp == aRul) && ret1 < 0.0) {
+    if (pos1 == 0.0)
+      pos1 = 359.999;
+    else
+      pos1 -= 0.001;
+  }
   else if (asp == aDeg)
     pos1 = (real)obj2 * (rDegMax / (real)(cSign * us.nSignDiv));
   if (!us.fSeconds) {
@@ -799,6 +805,8 @@ void PrintAspect(int obj1, real pos1, real ret1, int asp,
     sprintf(sz, "LA0");                        // Print at latitude zero.
   else if (asp == aDis)
     sprintf(sz, "EqD");                        // Print at equal distance.
+  else if (asp == aDec || asp == aRul)
+    sprintf(sz, "In:");                        // Print a decan/ruler change.
   else if (asp == 0)
     sprintf(sz, chart == 'm' ? "&" : "with");
   else
@@ -813,6 +821,14 @@ void PrintAspect(int obj1, real pos1, real ret1, int asp,
   if (asp == aSig) {
     AnsiColor(kSignA(obj2));
     sprintf(sz, "%s", szSignName[obj2]); PrintSz(sz);
+  } else if (asp == aDec) {
+    AnsiColor(kSignA(obj2));
+    sprintf(sz, "%.3s/%.3s",
+	    szSignName[(int)(pos1/rDegSign)+1], szSignName[obj2]); PrintSz(sz);
+  } else if (asp == aRul) {
+    AnsiColor(kSignA(obj2));
+    sprintf(sz, "%.3s/%.3s",
+	    szSignName[(int)(pos1/rDegSign)+1], szObjName[obj2]); PrintSz(sz);
   } else if (asp == aDeg) {
     is.fSeconds = fSav;
     PrintZodiac((real)obj2 * (rDegMax / (real)(cSign * us.nSignDiv)));

@@ -687,7 +687,7 @@ void ChartTransitSearch(flag fProg)
 {
   TransInfo ti[MAXINDAY], tiT, *pti;
   char sz[cchSzDef];
-  int M1, M2, Y1, Y2, counttotal = 0, occurcount, division, div, divSign, nAsp, fNoCusp,
+  int M1, M2, Y1, Y2, counttotal = 0, occurcount, division, div, nAsp, fNoCusp,
     nSkip = 0, i, j, k, l, s1, s2, s3, s4, s1prev = 0;
   real divsiz, daysiz, d, e1, e2, f1, f2, mc = is.MC, ob = is.OB;
   flag fPrint = fTrue;
@@ -713,7 +713,6 @@ void ChartTransitSearch(flag fProg)
   division = us.nDivision;
   if (!fProg && !fNoCusp)
     division = Max(division, 96);
-  divSign = cSign * us.nSignDiv;
   nAsp = is.fReturn ? aCon : us.nAsp;
   if (us.fParallel)
     nAsp = Min(nAsp, aOpp);
@@ -732,7 +731,7 @@ void ChartTransitSearch(flag fProg)
     }
   }
 
-  // Start searching the year or years in question for any transits.
+   // Start searching the year or years in question for any transits.
 
   for (YeaT = Y1; YeaT <= Y2; YeaT++)
 
@@ -742,6 +741,7 @@ void ChartTransitSearch(flag fProg)
     occurcount = 0; pti = ti;
     daysiz = (real)(us.fInDayMonth ? DayInMonth(MonT, YeaT) : 1)*24.0*60.0;
     divsiz = daysiz / (real)division;
+
 
     // Cast chart for beginning of month and store it for future use.
 
@@ -788,44 +788,151 @@ void ChartTransitSearch(flag fProg)
 
       for (i = 0; i <= is.nObj; i++) {
 
-        /* Does the current planet change into the next or previous sign? */
+	/* For progressions we are interested in sign and degree changes etc. */
 
         if (fProg && !us.fIgnoreSign && !FIgnore2(i) && occurcount < MAXINDAY) {
-          e1 = cp1.obj[i]; s1 = SFromZ(e1)-1;
-	  e2 = cp2.obj[i]; s2 = SFromZ(e2)-1;
-	  l = NAbs(s1-s2);
-          if (s1 != s2 && (l == 1 || l == cSign-1)) {
-	    pti->source = i;
-            pti->aspect = aSig;
-            pti->dest = s2+1;
-            pti->time
-	      = MinDistance(e1, (real)(cp1.dir[i] >= 0.0 ? s2 : s1) * 30.0)
-	      / MinDistance(e1, e2) * divsiz
-	      + (real)(div-1) * divsiz;
-            pti->posT = pti->posN = ZFromS(s1+1);
-            pti->retT = (cp1.dir[i] + cp2.dir[i]) / 2.0; // ??
-	    occurcount++; pti++;
 
-	    /* Does the current planet change into next or previous degree? */
+	  int amNum, amTotal;
+	  real amSize;
+	  
+	  if(us.fListDecan) {
 	    
+	    if(us.nDecanType > ddNone && us.nDecanType < dd27) {
+
+	      int t1, t2;
+	      real b1, b2;
+	      CONST int *rgTerm;
+	      
+	      e1 = cp1.obj[i]; e2 = cp2.obj[i];
+
+	      switch (us.nDecanType) {
+	      case ddEgypt: case ddPtolemy:
+		amNum = 5; // amSize = rDegSign/amNum;
+		rgTerm = ((us.nDecanType == ddEgypt) ? rgnTermEgypt : rgnTermPtolemy);
+		s1 = (int)(e1 / rDegSign); // early sign index
+		s2 = (int)(e2 / rDegSign);
+		b1 = s1 * rDegSign;        // early bound
+		b2 = s2 * rDegSign;
+		j = s1 * amNum;            // early term index
+		k = s2 * amNum;
+		for(t1 = 0; e1 > (b1 += ((rgTerm[s1*2] >> (4-t1)*4) & 15)); t1++);
+		for(t2 = 0; e2 > (b2 += ((rgTerm[s2*2] >> (4-t2)*4) & 15)); t2++);
+		j += t1; k += t2;
+		break; 
+	      case ddDecanR: case ddDecanS: case ddChaldea:
+		amNum = 3; amSize = rDegSign/amNum;
+		j = (int)(e1 / amSize);    // early amsha index
+		k = (int)(e2 / amSize);    // late amsha index
+		break;
+	      case ddNavamsa:
+		amNum = 9; amSize = rDegSign/amNum;
+		j = (int)(e1 / amSize);
+		k = (int)(e2 / amSize);
+	      case dd12: case ddDwad:
+		amNum = 12; amSize = rDegSign/amNum;
+		j = (int)(e1 / amSize);
+		k = (int)(e2 / amSize);
+		break;
+	      }
+	      
+	      l = NAbs(j-k);
+	      amTotal = amNum * cSign;
+	      if (j != k && (l == 1 || l == amTotal-1)) {
+		l = ((j + 1) % amTotal == k ? k : j);     // following amsha index
+		pti->source = i;
+		pti->retT = (l == k) ? 1.0 : -1.0;
+		pti->posT = pti->posN = (real)l * amSize; // overw. for ddEgypt..
+		
+		switch (us.nDecanType) {
+		case ddEgypt: case ddPtolemy:
+		  pti->aspect = aRul;
+		  pti->dest = ((rgTerm[s2*2+1] >> (4-t2)*4) & 15);  // late term ruler
+		  if(l==k)
+		    pti->posT = pti->posN = b1; // leading bound!
+		  else
+		    pti->posT = pti->posN = b2; // leading bound!
+		  break;
+		case ddDecanR:
+		  pti->aspect = aRul;
+		  pti->dest = rules[(k/3+(k%3)*4)%12+1];   // planet number
+		  break;
+		case ddDecanS:
+		  pti->aspect = aDec;
+		  pti->dest = (k/3+(k%3)*4)%12+1;          // sign number
+		  break;
+		case ddChaldea:
+		  pti->aspect = aRul;
+		  pti->dest = (0x6723415 >> (k%7)*4) & 15; // planet number
+		  break;
+		case ddNavamsa:
+		  pti->aspect = aDec;
+		  pti->dest = k%12+1;
+		  break;
+		case dd12:
+		  pti->aspect = aDec;
+		  pti->dest = k%12+1;
+		  break;
+		case ddDwad:
+		  pti->aspect = aDec;
+		  pti->dest = (k/12+(k%12))%12+1;
+		  break;
+		default:
+		  pti->aspect = 0;
+		  pti->dest = 0;
+		}
+	      
+		pti->time
+		  = MinDistance(e1, pti->posT)
+		  / MinDistance(e1, e2) * divsiz
+		  + (real)(div-1) * divsiz;
+		occurcount++; pti++;
+	      }
+	    }
+
 	  } else {
-            j = (int)(e1 / (rDegMax / (real)divSign));
-            k = (int)(e2 / (rDegMax / (real)divSign));
-            l = NAbs(j-k);
-            if (j != k && (l == 1 || l == divSign-1)) {
-              l = k;
-              if (j == k+1 || j == k-(divSign-1))
-                l = j;
-              pti->source = i;
-              pti->aspect = aDeg;
-              pti->dest = l;
-              pti->time
-		= MinDistance(e1, (real)l * (rDegMax / (real)divSign))
+	    
+	    e1 = cp1.obj[i]; e2 = cp2.obj[i]; 
+	    s1 = SFromZ(e1)-1; s2 = SFromZ(e2)-1; // sign index
+	    l = NAbs(s1-s2);
+
+	    // check for sign changes
+	    if (s1 != s2 && (l == 1 || l == cSign-1)) {
+	      
+	      pti->source = i;
+	      pti->aspect = aSig;
+	      pti->dest = s2+1; // LATE SIGN NUMBER für aSig!
+	      pti->time
+		= MinDistance(e1, (real)((s1 + 1) % cSign == s2 ? s2 : s1) * rDegSign)
 		/ MinDistance(e1, e2) * divsiz
 		+ (real)(div-1) * divsiz;
-              pti->posT = pti->posN = e1;
-              pti->retT = (l == k) ? 1.0 : -1.0;  // ??
-              occurcount++; pti++;
+	      pti->posT = pti->posN = ZFromS(s1+1);        // ggf. +29.999 siehe PrintAspect()
+	      pti->retT = (cp1.dir[i] + cp2.dir[i]) / 2.0; // muss das genau sein für aSig?
+	      occurcount++; pti++;
+	      
+	      // check for arbitrary division changes
+	    } else if(us.nSignDiv > 0) {
+	      amNum = us.nSignDiv;
+	      amTotal = amNum*cSign;
+	      amSize = rDegSign/amNum;
+	      j = (int)(e1 / amSize);
+	      k = (int)(e2 / amSize);
+	      l = NAbs(j-k);
+
+	      if (j != k && (l == 1 || l == amTotal-1)) {
+
+		l = ((j + 1) % amTotal == k ? k : j);
+		  
+		pti->source = i;
+		pti->aspect = aDeg;
+		pti->dest = l; // INDEX VORDERES AMSHA für aDeg!
+		pti->time
+		  = MinDistance(e1, (real)l * amSize)
+		  / MinDistance(e1, e2) * divsiz
+		  + (real)(div-1) * divsiz;
+		pti->posT = pti->posN = e1;
+		pti->retT = (l == k) ? 1.0 : -1.0;  // reicht das so für aDeg?
+		occurcount++; pti++;
+	      }
 	    }
 	  }
 	}
