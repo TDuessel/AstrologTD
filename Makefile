@@ -29,7 +29,7 @@
 # ...(char *)(!wi.fAutoSaveWire...)
 # avoids -fpermissive for the compiler
 #
-# Modified 02/18/2024.
+# Modified 02/21/2024.
 
 NAME_linux = astrolog
 NAME_mingw = astrolog.exe
@@ -65,10 +65,10 @@ DLLS_mingw += odbc32 ole32 oleaut32 winspool odbccp32
 DLLS_mingw += uuid
 
 $(OBJDIR_linux)/%.o: %.cpp *.h | $(OBJDIR_linux)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CPPFLAGS) $(CPPEXTRA) $(CXXFLAGS) -c -o $@ $<
 
 $(OBJDIR_mingw)/%.o: %.cpp *.h | $(OBJDIR_mingw)
-	$(CXX_mingw) $(CPPFLAGS_mingw) $(CXXFLAGS_mingw) -c -o $@ $<
+	$(CXX_mingw) $(CPPFLAGS_mingw) $(CPPEXTRA) $(CXXFLAGS_mingw) -c -o $@ $<
 
 $(OBJDIR_mingw)/%.res: %.rc | $(OBJDIR_mingw)
 	$(RC_mingw) $(RCFLAGS_mingw) -o $@ $<
@@ -82,9 +82,13 @@ $(NAME_mingw): $(OBJS_mingw)
 $(OBJDIR_linux) $(OBJDIR_mingw):
 	mkdir $@
 
+.PHONY: all linux win clean distclean
+
 win: $(NAME_mingw)
 
-.PHONY: clean distclean
+linux: $(NAME_linux)
+
+all: linux win
 
 clean:
 	$(RM) $(OBJS_linux)
