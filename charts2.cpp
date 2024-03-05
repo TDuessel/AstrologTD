@@ -454,11 +454,12 @@ void CastRelation(void)
   // Cast the second chart.
 
   ciCore = ciTwin;
-  if (us.nRel == rcTransit) {
+  if (us.nRel <= rcTransit) {
     CopyRgb(ignore, ignoreSav, sizeof(ignore));
     for (i = 0; i <= is.nObj; i++)
       ignore[i] = ignore[i] && ignore2[i];
-  } else if (us.nRel == rcProgress) {
+  }
+  if (us.nRel == rcProgress) {
     us.fProgress = fTrue;
     is.JDp = MdytszToJulian(MM, DD, YY, TT, SS, ZZ);
     ciCore = ciMain;
@@ -471,9 +472,9 @@ void CastRelation(void)
     t2 = CastChart(2);
     cp2 = cp0;
   }
-  if (us.nRel == rcTransit)
+  if (us.nRel <= rcTransit)
     CopyRgb(ignoreSav, ignore, sizeof(ignore));
-  else if (us.nRel == rcProgress)
+  if (us.nRel == rcProgress)
     us.fProgress = fSav;
 
   // Cast the third through sixth charts.
