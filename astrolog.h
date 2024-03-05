@@ -511,6 +511,7 @@
 #define rDegMax    360.0
 #define rDegHalf   180.0
 #define rDegQuad   90.0
+#define rDegSign   30.0
 #define rDegRad    (rDegHalf/rPi)
 #define rMiToKm    1.609344
 #define rFtToM     0.3048
@@ -722,6 +723,8 @@ enum _objects {
 // Aspects
 
 enum _aspects {
+  aRul = -10, // Decan change (ruler)
+  aDec = -9,  // Decan change (sign)
   aDis = -8,  // Distances equal
   aNod = -7,  // Latitude zero/node crossing
   aLen = -6,  // Direction change (distance)
