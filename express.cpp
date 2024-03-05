@@ -61,7 +61,7 @@
 ******************************************************************************
 */
 
-#define cfunA 415
+#define cfunA 417
 #ifdef GRAPH
 #define cfunX 68
 #else
@@ -515,6 +515,8 @@ enum _functionindex {
   funWcli,
   funWsetup,
   funJplweb,
+  funGraph,
+  funPs,
 
   // Programming functions (related to variables and control flow)
   funVar,
@@ -1019,6 +1021,8 @@ CONST FUN rgfun[cfun] = {
 {funWcli,   "WCLI",   0, I_},
 {funWsetup, "WSETUP", 0, I_},
 {funJplweb, "JPLWEB", 0, I_},
+{funGraph,  "GRAPH", 0, I_},
+{funPs,     "PS", 0, I_},
 
 // Programming functions (related to variables and control flow)
 {funVar,     "Var",     1, E_I},
@@ -1732,6 +1736,20 @@ flag FEvalFunction(int ifun, PAR *rgpar, char *rgpchEval[2])
     break;
   case funJplweb:
 #ifdef JPLWEB
+    n = 1;
+#else
+    n = 0;
+#endif
+    break;
+  case funGraph:
+#ifdef GRAPH
+    n = 1;
+#else
+    n = 0;
+#endif
+    break;
+  case funPs:
+#ifdef PS
     n = 1;
 #else
     n = 0;

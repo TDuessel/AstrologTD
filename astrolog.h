@@ -126,10 +126,10 @@
 #define PS /* Comment out this #define if you don't want the ability to */
            /* generate charts in the PostScript graphics format.        */
 
-#define META /* Comment out this #define if you don't want the ability to  */
+//#define META /* Comment out this #define if you don't want the ability to  */
              /* generate charts in the MS Windows metafile picture format. */
 
-#define WIRE /* Comment out this #define if you don't want the ability to */
+//#define WIRE /* Comment out this #define if you don't want the ability to */
              /* generate charts in the Daedalus wireframe vector format.  */
 
 #define ATLAS /* Comment out this #define if you don't want the built in  */

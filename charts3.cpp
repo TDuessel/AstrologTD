@@ -67,17 +67,19 @@ void PrintInDays(InDayInfo *pid, int occurcount, int counttotal, flag fProg)
   char sz[cchSzDef];
   int fVoid, nVoid, nSkip = 0, i, j, k, s1, s2, s3;
   CI ciCast = ciSave, ciEvent;
+  int *rgzCalendar = NULL;
 #ifdef EXPRESS
   int nEclipse;
   real rEclipse;
 #endif
 #ifdef GRAPH
   int nEclipse2;
+  rgzCalendar = gi.rgzCalendar;
 #endif
 
-  i = (gi.rgzCalendar == NULL ? -1 : occurcount);
+  i = (rgzCalendar == NULL ? -1 : occurcount);
   loop {
-    i += (gi.rgzCalendar == NULL ? 1 : -1);
+    i += (rgzCalendar == NULL ? 1 : -1);
     if (!FBetween(i, 0, occurcount-1))
       break;
 
@@ -87,7 +89,7 @@ void PrintInDays(InDayInfo *pid, int occurcount, int counttotal, flag fProg)
     nVoid = -1;
     fVoid = FAspectVoid(pid[i].source, pid[i].dest, pid[i].aspect);
 #ifdef EXPRESS
-    if (gi.rgzCalendar != NULL &&
+    if (rgzCalendar != NULL &&
       (i >= occurcount || pid[i].day != pid[i+1].day))
       nSkip = 0;
     // Adjust whether this aspect can be going v/c if AstroExpression says so.
@@ -691,12 +693,14 @@ void ChartTransitSearch(flag fProg)
   flag fPrint = fTrue;
   CP cpN = cp0;
   CI ciSav, ciCast = ciSave, ciEvent;
+  int *rgzCalendar = NULL;
 
   // Save away natal chart and initialize things.
 
 #ifdef GRAPH
   InDayInfo idT;
   fPrint &= (gi.rgzCalendar == NULL);
+  rgzCalendar = gi.rgzCalendar;
 #endif
   ciSav = ciTran;
   if (fProg)
@@ -943,9 +947,9 @@ void ChartTransitSearch(flag fProg)
 
       // Now loop through list and display all the transits.
 
-      i = (gi.rgzCalendar == NULL ? -1 : occurcount);
+      i = (rgzCalendar == NULL ? -1 : occurcount);
       loop {
-        i += (gi.rgzCalendar == NULL ? 1 : -1);
+        i += (rgzCalendar == NULL ? 1 : -1);
         if (!FBetween(i, 0, occurcount-1))
           break;
 
@@ -963,7 +967,7 @@ void ChartTransitSearch(flag fProg)
         SetCI(ciCast, MonT, s1+1, YeaT, (real)j / (60.0*60.0),
           DstT, ZonT, LonT, LatT);
 #ifdef EXPRESS
-        if (gi.rgzCalendar != NULL && (i >= occurcount || s1 != s1prev))
+        if (rgzCalendar != NULL && (i >= occurcount || s1 != s1prev))
           nSkip = 0;
         s1prev = s1;
         // May want to skip this transit if AstroExpression says to do so.
@@ -982,7 +986,7 @@ void ChartTransitSearch(flag fProg)
         ciSave = ciCast;
 #ifdef GRAPH
         // May want to draw current transit within a graphic calendar box.
-        if (gi.rgzCalendar != NULL) {
+        if (rgzCalendar != NULL) {
           for (j = i; j >= 0 && (int)ti[j].time/(24*60)+1 == ciSave.day; j--)
             ;
           for (k = i; k < occurcount &&
