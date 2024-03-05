@@ -2,6 +2,7 @@
 *#
 *.o
 astrolog
+astrolog.exe
 *.ps
 *.eps
 *.bmp
@@ -17,4 +18,5 @@ astrolog
 !seorbel.txt
 TAGS
 config/
-
+objs_linux/
+objs_mingw/
