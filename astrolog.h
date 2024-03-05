@@ -1353,7 +1353,7 @@ enum _terminationcode {
 #endif
 
 // Should an object in the outer wheel be restricted?
-#define FProper2(i) (!(us.nRel == rcTransit ? ignore2[i] : ignore[i]))
+#define FProper2(i) (!(us.nRel == rcTransit || us.nRel == rcProgress ? ignore2[i] : ignore[i]))
 
 // Are particular coordinates on the chart?
 #define FInRect(x, y, x1, y1, x2, y2) \
