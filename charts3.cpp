@@ -347,6 +347,10 @@ int CheckSignChange(InDayInfo *pid, int i, int div, real divsiz, int month, int 
       l = NAbs(s1-s2);
       if (s1 != s2 && (l == 1 || l == cSign-1)) {
 	
+	j = (int)(e1 / rDegSign);    // early sign index
+	k = (int)(e2 / rDegSign);    // late sign index
+        l = ((j + 1) % cSign == k ? k : j);     // following sign index
+	
 	pid->source = i;
 	pid->aspect = aSig;
 	pid->dest = s2+1;
@@ -354,7 +358,7 @@ int CheckSignChange(InDayInfo *pid, int i, int div, real divsiz, int month, int 
 	  = MinDistance(e1, (real)(cp1.dir[i] >= 0.0 ? s2 : s1) * rDegSign)
 	  / MinDistance(e1, e2)*divsiz
 	  + (real)(div-1)*divsiz;
-	pid->pos1 = pid->pos2 = ZFromS(s1+1);
+	pid->pos1 = pid->pos2 = l*rDegSign;
 	pid->ret1 = cp1.dir[i];
 	pid->ret2 = cp2.dir[i];
 	pid->mon = month;
