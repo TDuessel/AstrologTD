@@ -819,7 +819,7 @@ void PrintAspect(int obj1, real pos1, real ret1, int asp,
     if((int)(pos1/rDegSign) != (int)(pos2/rDegSign))
       sprintf(sz, "-->");                        // Print a sign change.
     else
-      sprintf(sz, "In:");                        // Print a decan/ruler change.
+      sprintf(sz, " > ");                        // Print a decan/ruler change.
   }
   else if (asp == 0)
     sprintf(sz, chart == 'm' ? "&" : "with");
