@@ -2717,6 +2717,8 @@ flag FProcessSwitches(int argc, char **argv)
       return fTrue;
 
     case '@':    // The -@ switch is just a system flag indicator no-op.
+      if(ch1 == 'A' && (ch2 == 'I' || ch2 == 'P' || ch2 == 'L'))
+	is.fHaveInfo = fTrue;
       break;
 
     case '.':                // "-." is usually used to exit the -Q loop.
