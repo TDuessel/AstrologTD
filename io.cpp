@@ -2325,7 +2325,7 @@ flag FInputData(CONST char *szFile)
   file = FileOpen(szFile, 1, NULL);
   if (file == NULL)
     return fFalse;
-  is.fHaveInfo = fTrue;
+  //is.fHaveInfo = fTrue;
   if (!fgets(sz, cchSzMax, file))
     return fFalse;
   ch = sz[0];
