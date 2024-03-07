@@ -275,6 +275,7 @@ int CheckSignChange(InDayInfo *pid, int i, int div, real divsiz, int month, int 
 	amNum = 9; amSize = rDegSign/amNum;
 	j = (int)(e1 / amSize);
 	k = (int)(e2 / amSize);
+	break;
       case dd12: case ddDwad:
 	amNum = 12; amSize = rDegSign/amNum;
 	j = (int)(e1 / amSize);
