@@ -836,11 +836,13 @@ void PrintAspect(int obj1, real pos1, real ret1, int asp,
     AnsiColor(kSignA(obj2));
     sprintf(sz, "%s", szSignName[obj2]); PrintSz(sz);
   } else if (asp == aDec) {
-    AnsiColor(kSignA(obj2));
+    ki = kSignA(SFromZ(pos2));
+    AnsiColor(ki);
     sprintf(sz, "%.3s/%.3s",
 	    szSignName[(int)(pos2/rDegSign)+1], szSignName[obj2]); PrintSz(sz);
   } else if (asp == aRul) {
-    AnsiColor(kSignA(obj2));
+    ki = kSignA(SFromZ(pos2));
+    AnsiColor(ki);
     sprintf(sz, "%.3s/%.3s",
 	    szSignName[(int)(pos2/rDegSign)+1], szObjName[obj2]); PrintSz(sz);
   } else if (asp == aDeg) {
