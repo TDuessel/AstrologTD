@@ -836,15 +836,19 @@ void PrintAspect(int obj1, real pos1, real ret1, int asp,
     AnsiColor(kSignA(obj2));
     sprintf(sz, "%s", szSignName[obj2]); PrintSz(sz);
   } else if (asp == aDec) {
-    ki = kSignA(SFromZ(pos2));
-    AnsiColor(ki);
-    sprintf(sz, "%.3s/%.3s",
-	    szSignName[(int)(pos2/rDegSign)+1], szSignName[obj2]); PrintSz(sz);
+    AnsiColor(kSignA(SFromZ(pos2)));
+    sprintf(sz, "%.3s", szSignName[(int)(pos2/rDegSign)+1]); PrintSz(sz);
+    AnsiColor(kWhite);
+    sprintf(sz, "/"); PrintSz(sz);
+    AnsiColor(kSignA(obj2));
+    sprintf(sz, "%.3s", szSignName[obj2]); PrintSz(sz);
   } else if (asp == aRul) {
-    ki = kSignA(SFromZ(pos2));
-    AnsiColor(ki);
-    sprintf(sz, "%.3s/%.3s",
-	    szSignName[(int)(pos2/rDegSign)+1], szObjName[obj2]); PrintSz(sz);
+    AnsiColor(kSignA(SFromZ(pos2)));
+    sprintf(sz, "%.3s", szSignName[(int)(pos2/rDegSign)+1]); PrintSz(sz);
+    AnsiColor(kWhite);
+    sprintf(sz, "/"); PrintSz(sz);
+    AnsiColor(kObjA[obj2]);
+    sprintf(sz, "%.3s", szObjName[obj2]); PrintSz(sz);
   } else if (asp == aDeg) {
     is.fSeconds = fSav;
     PrintZodiac((real)obj2 * (rDegMax / (real)(cSign * us.nSignDiv)));
