@@ -976,6 +976,7 @@ enum _graphicschart {
   gCredit     = 40,
   gMax        = 41,
 #endif
+  gTest       = 42,
 };
 
 // Colors
@@ -1618,6 +1619,7 @@ typedef struct _UserSettings {
   flag fAtlasNear;      // -Nl
   flag fZoneChange;     // -Nz
   flag fMoonChart;      // -8
+  flag fTestChart;  // for testing things
 
   // Chart suboptions
   flag fVelocity;       // -v0
