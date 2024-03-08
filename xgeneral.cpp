@@ -466,9 +466,7 @@ void DrawClearScreen()
   if (gs.ft == ftPS) {
     // For PostScript charts first output page orientation information.
     if (!gi.fEps) {
-      if (gs.nOrient == 0)
-        gs.nOrient = gs.xWin > gs.yWin ? -1 : 1;
-      if (gs.nOrient < 0) {
+      if (gs.nOrient < 0 || (gs.nOrient == 0 && gs.xWin > gs.yWin)) {
         // Values chartx and charty are reversed for Landscape mode.
         fprintf(gi.file, "%d %d translate\n",
           ((int)(gs.xInch*72.0+rRound) + gs.yWin)/2,
