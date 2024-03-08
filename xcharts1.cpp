@@ -128,6 +128,16 @@ void XChartWheel()
   DrawSidebar();
 }
 
+void XChartTest()
+{
+  int cx, cy, i, j;
+  real unitx, unity;
+  cx = gs.xWin/2 - 1; cy = gs.yWin/2 - 1;
+  unitx = (real)cx; unity = (real)cy;
+ 
+  DrawColor(kBlue);
+  DrawBlock(0,0,unitx,unity);
+}
 
 // Draw an astro-graph chart on a map of the world, i.e. the draw the
 // Ascendant, Descendant, Midheaven, and Nadir lines corresponding to the

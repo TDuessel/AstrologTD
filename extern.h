@@ -924,6 +924,7 @@ extern void EquToTelescope P((real, real, TELE *, int *, int *, real*, real*));
 extern void EclToTelescope P((real, real, TELE *, int *, int *, real*, real*));
 
 extern void XChartWheel P((void));
+extern void XChartTest P((void));
 extern void XChartAstroGraph P((void));
 extern KI FormatGridCell P((char *, int, int, int, flag));
 extern void XChartGrid P((int, int));

@@ -1694,7 +1694,9 @@ int NProcessSwitchesX(int argc, char **argv, int pos,
     SwitchF(gs.fAnimMap);
     break;
 #endif
-
+  case 'T':
+    SwitchF(us.fTestChart);
+    break;
   default:
     ErrorSwitch(argv[0]);
     return tcError;
@@ -2079,6 +2081,7 @@ int DetectGraphicsChartMode()
   else if (us.fInDayGra)           nMode = gTraTraGra;
   else if (us.fTransitGra)         nMode = gTraNatGra;
   else if (us.nRel == rcBiorhythm) nMode = gBiorhythm;
+  else if (us.fTestChart)          nMode = gTest;
   else                             nMode = gWheel;
 
   return nMode;

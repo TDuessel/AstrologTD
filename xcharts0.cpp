@@ -2201,6 +2201,9 @@ void DrawChartX()
     XChartBiorhythm();
     break;
 #endif
+  case gTest:
+    XChartTest();
+    break;
   }
 
   // Print text showing chart information at bottom of window.
