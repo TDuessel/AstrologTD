@@ -15,6 +15,8 @@ want to try bilding with them but will sooner or later stop beeing functional.
 
 Recent changes in this version:
 
+- Fix of wrongly scaled postscript output for formats other than 'Letter'.
+- Decan and ruler changes can be listed with aspects and progressions.
 - Makefile for building the Windows version with the MinGW toolchain
 - Bugfix for internal handling of chart information (by [CruiserOne][])
 - Drop usage of register storage class specifier (by [listout][])
