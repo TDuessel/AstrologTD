@@ -462,16 +462,16 @@ void WinClearScreen(KI ki)
 
 void DrawClearScreen()
 {
-#ifdef PS
+ #ifdef PS
   if (gs.ft == ftPS) {
     // For PostScript charts first output page orientation information.
     if (!gi.fEps) {
       if (gs.nOrient < 0 || (gs.nOrient == 0 && gs.xWin > gs.yWin)) {
         // Values chartx and charty are reversed for Landscape mode.
         fprintf(gi.file, "%d %d translate\n",
-          ((int)(gs.xInch*72.0+rRound) + gs.yWin)/2,
-          ((int)(gs.yInch*72.0+rRound) + gs.xWin)/2);
-        fprintf(gi.file, "-90 rotate\n");
+          ((int)(gs.xInch*72.0+rRound) - gs.yWin)/2,
+          ((int)(gs.yInch*72.0+rRound) - gs.xWin)/2);
+        fprintf(gi.file, "90 rotate\n");
       } else {
         // Most charts are in Portrait mode.
         fprintf(gi.file, "%d %d translate\n",
