@@ -76,7 +76,7 @@ GS gs = {
 #else
   0,
 #endif
-  200, 100, 0, 0, 0, 3, 1, 0, 0.0, 0.0, oMoo, BITMAPMODE, 25.0, 1, 0,
+  DEFSCALE, DEFSCALETXT, 0, 0, 0, 3, 1, 0, 0.0, 0.0, oMoo, BITMAPMODE, 25.0, 1, 0,
   8.5, 11.0, NULL, 0, 25, 11, 1, NULL, oCore, 0.0, 1000, 0, 600,
   1, 1, 1, 2, 2, 1, fFalse, fFalse, fTrue, 7, 0, NULL, NULL};
 
