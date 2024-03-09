@@ -261,6 +261,8 @@
 #define BITMAPY1    180
 #define DEFAULTX    600  // Default window size.
 #define DEFAULTY    600
+#define DEFSCALE    200
+#define DEFSCALETXT 100
 #define SIDESIZE    160  // Size of wheel chart information sidebar.
 #define MAXMETA 8000000  // Max bytes allowed in a metafile.
 #define METAMUL      12  // Metafile coordinate to chart pixel ratio.

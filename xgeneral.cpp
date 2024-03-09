@@ -464,8 +464,19 @@ void DrawClearScreen()
 {
  #ifdef PS
   if (gs.ft == ftPS) {
-    // For PostScript charts first output page orientation information.
+    
+    // For PostScript charts first set text and window scalings
+    // to default and then output page orientation information.
     if (!gi.fEps) {
+      gi.nScale = DEFSCALE/(gs.xInch < 7.25 ? 200:100);
+      gi.nScaleText = DEFSCALETXT/50;
+      gi.nScaleTextT2 = DEFSCALETXT/50 * PSMUL;
+      
+      gs.xWin = DEFAULTX * gs.xInch/8.5;
+      if(fSidebar)
+	gs.xWin += (SIDESIZE * gi.nScaleText) >> 1;
+      gs.yWin = DEFAULTY * gs.xInch/8.5;
+      
       if (gs.nOrient < 0 || (gs.nOrient == 0 && gs.xWin > gs.yWin)) {
         // Values chartx and charty are reversed for Landscape mode.
         fprintf(gi.file, "%d %d translate\n",
