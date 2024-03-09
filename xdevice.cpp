@@ -1151,9 +1151,9 @@ void PsFont(int nFont)
 
 void PsBegin()
 {
-  fprintf(gi.file, "%%!PS-Adobe-2.0");
+  fprintf(gi.file, "%%!PS-Adobe-3.0");
   if (gi.fEps)
-    fprintf(gi.file, " EPSF-2.0");
+    fprintf(gi.file, " EPSF-3.0");
   fprintf(gi.file, "\n%%%%Title: %s\n", gi.szFileOut);
   fprintf(gi.file, "%%%%Creator: %s %s\n", szAppName, szVersionCore);
   fprintf(gi.file, "%%%%CreationDate: %s\n", szDateCore);
@@ -1165,16 +1165,19 @@ void PsBegin()
     fprintf(gi.file, "%%%%EndSetup\n");
     fprintf(gi.file, "0 0 %d %d rc\n", gs.xWin, gs.yWin);
   } else {
-    fprintf(gi.file, "%%%%Pages: 1 1\n");
+    fprintf(gi.file, "%%%%Pages: 1\n");
     fprintf(gi.file, "%%%%DocumentFonts: (atend)\n");
-    fprintf(gi.file, "%%%%BoundingBox: %d %d %d %d\n", PSGUTTER, PSGUTTER,
-      (int)(gs.xInch*72.0+rRound)-PSGUTTER,
-      (int)(gs.yInch*72.0+rRound)-PSGUTTER);
+    fprintf(gi.file, "%%%%BoundingBox: %d %d %d %d\n", 0, 0,
+      (int)(gs.xInch*72.0+rRound),
+      (int)(gs.yInch*72.0+rRound));
+    fprintf(gi.file, "%%%%Orientation: %s\n",
+	    gs.nOrient < 0 || (gs.nOrient == 0 && gs.xWin > gs.yWin)?
+	    "Landscape":"Portrait");
     fprintf(gi.file, "%%%%EndComments\n");
     fprintf(gi.file, "%%%%BeginProcSet: common\n");
     fprintf(gi.file, szPsFunctions);
     fprintf(gi.file, "%%%%EndProcSet\n");
-    fprintf(gi.file, "%%%%Page: 1 1\n");
+    fprintf(gi.file, "%%%%Page: Chart 1\n");
   }
   PsFont(fiAstrolog);
   fprintf(gi.file, "gsave\n");

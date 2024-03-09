@@ -137,6 +137,8 @@ void XChartTest()
  
   DrawColor(kBlue);
   DrawBlock(0,0,unitx,unity);
+  DrawColor(kRed);
+  DrawDash(0, 0, gs.xWin, gs.yWin, 0);
 }
 
 // Draw an astro-graph chart on a map of the world, i.e. the draw the
