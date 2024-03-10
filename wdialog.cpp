@@ -481,9 +481,9 @@ flag API DlgSaveChart()
   case cmdSavePS:
     ofn.lpstrTitle = "Save Chart PostScript";
     ofn.lpstrFilter =
-      "Encapsulated PostScript (*.eps)\0*.eps\0PostScript (*.ps)\0*.ps\0All Files (*.*)\0*.*\0";
-    ofn.lpstrDefExt = "eps";
-    sprintf(szFileName, "*.eps");
+      "PostScript (*.ps)\0*.ps\0Encapsulated PostScript (*.eps)\0*.eps\0All Files (*.*)\0*.*\0";
+    ofn.lpstrDefExt = "ps";
+    sprintf(szFileName, "*.ps");
     break;
   case cmdSaveWire:
     ofn.lpstrTitle = "Save Chart Wireframe";
