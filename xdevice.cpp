@@ -945,8 +945,9 @@ flag BeginFileX()
         WaitForSingleObject(wi.hMutex, 1000);
     }
 #endif
-    gi.file = fopen(gi.szFileOut, (gs.ft == ftBmp && gs.chBmpMode != 'B') ||
-      gs.ft == ftPS || gs.ft == ftWire ? "w" : "wb");
+    gi.file = fopen(gi.szFileOut,
+		    (gs.ft == ftBmp && gs.chBmpMode != 'B') //|| gs.ft == ftPS
+		    || gs.ft == ftWire ? "w" : "wb");
     if (gi.file != NULL)
       break;
 #ifdef WIN
