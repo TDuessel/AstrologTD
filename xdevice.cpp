@@ -1137,11 +1137,11 @@ void PsFont(int nFont)
   if (nFont == gi.nFontPS || gs.nFontAll == 0)
     return;
   szFont = rgszFontName[nFont];
-  z = PSMUL*gi.nScale;
+  z = PSMUL*gi.nScale; // 11*11*2 = 242!
   if (nFont == fiAstrolog) {
     szFont = "Times-Roman"; z = 4*PSMUL*gi.nScaleText;
   } else if (nFont == fiCourier) {
-    szFont = "Courier"; z = 5*PSMUL*gi.nScaleText;
+    szFont = "Courier"; z = 5*PSMUL*gi.nScaleText; // 5*11*2 = 110
   }
   fprintf(gi.file, "/%s[%d 0 0 -%d 0 0]sf\n", szFont, z, z);
   gi.nFontPS = nFont;
@@ -1180,7 +1180,8 @@ void PsBegin()
     fprintf(gi.file, "%%%%EndProcSet\n");
     fprintf(gi.file, "%%%%Page: Chart 1\n");
   }
-  PsFont(fiAstrolog);
+  // and then put out a default font for the whole document
+  // PsFont(fiAstrolog); // ineffective, gi.nFontPS = 0 in first call
   fprintf(gi.file, "gsave\n");
   PsLineWidth(!gs.fThick ? gi.nPenWid/2 : gi.nPenWid*2);
   gi.xPen = -1;
