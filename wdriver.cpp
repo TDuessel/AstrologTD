@@ -494,6 +494,7 @@ void DoPopup(int imenu, HWND hwnd, LPARAM lParam)
 int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
   LPSTR lpszCmdLine, int nCmdShow)
 {
+  SetProcessDPIAware();
   MSG msg;
   WNDCLASS wndclass;
   char ch;
